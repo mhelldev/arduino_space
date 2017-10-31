@@ -8,8 +8,6 @@
 #define D_NUM 47
 Adafruit_SSD1306 display(OLED_RESET);
 
-const int MONITOR_WIDTH = 128;
-const int MONITOR_HEIGHT = 32;
 const int buttonPin = 2; 
 int lastButtonState = 0; 
 int currentPositionX = 0;
@@ -20,6 +18,8 @@ int counter = 0;
 bool gameRunning = false;
 int starsX[10];
 int starsY[10];
+int asteroidsX[1];
+int asteroidsY[1];
 
 void setup()   {        
   Serial.begin(9600);  
@@ -28,12 +28,16 @@ void setup()   {
   // random start seed / zufälligen Startwert für Random-Funtionen initialisieren
   randomSeed(analogRead(0));
   currentPositionX = 20;
-  currentPositionY = MONITOR_HEIGHT / 2;
+  currentPositionY = display.height() / 2;
   currentDirection = 1;
   counter = 0;
   for (int i=0; i < 10; i++) {
-    starsX[i] = random(MONITOR_WIDTH);
-    starsY[i] = random(MONITOR_HEIGHT);
+    starsX[i] = random(display.width());
+    starsY[i] = random(display.height());
+  }
+  for (int i=0; i < 1; i++) {
+    asteroidsX[i] = random(display.width(), display.width()*2);
+    asteroidsY[i] = random(display.height());
   }
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
@@ -54,10 +58,10 @@ void loop() {
 }
 
 void drawField() {
-  display.drawLine(0, 0, MONITOR_WIDTH, 0, WHITE);
-  display.drawLine(0, MONITOR_HEIGHT - 1, MONITOR_WIDTH, MONITOR_HEIGHT - 1, WHITE);
-  display.drawLine(0, 0, 0, MONITOR_HEIGHT - 1, WHITE);
-  display.drawLine(MONITOR_WIDTH - 1, 0, MONITOR_WIDTH - 1, MONITOR_HEIGHT - 1, WHITE);
+  display.drawLine(0, 0, display.width(), 0, WHITE);
+  display.drawLine(0, display.height() - 1, display.width(), display.height() - 1, WHITE);
+  display.drawLine(0, 0, 0, display.height() - 1, WHITE);
+  display.drawLine(display.width() - 1, 0, display.width() - 1, display.height() - 1, WHITE);
 }
 
 void refreshObjects() {
@@ -70,6 +74,7 @@ void refreshObjects() {
   display.drawPixel(currentPositionX, currentPositionY-1, WHITE);
 
   refreshStars();
+  refreshEnemies();
 
   display.display();
 }
@@ -79,8 +84,19 @@ void refreshStars() {
     display.drawPixel(starsX[i], starsY[i], WHITE);
     starsX[i] -= 2;
     if (starsX[i] < 0) {
-      starsX[i] = MONITOR_WIDTH;
-      starsY[i] = random(MONITOR_HEIGHT);
+      starsX[i] = display.width();
+      starsY[i] = random(display.height());
+    }
+  }
+}
+
+void refreshEnemies() {
+   for (int i=0; i < 1; i++) {
+    display.fillCircle(asteroidsX[i], asteroidsY[i], 2, WHITE);
+    asteroidsX[i] -= 1;
+    if (asteroidsX[i] < 0) {
+      asteroidsX[i] = random(display.width(), display.width()*2);
+      asteroidsY[i] = random(display.height());
     }
   }
 }
@@ -120,7 +136,7 @@ void gameOver() {
   display.println("GAME OVER");
   // draw some random pixel / zufaellige Pixel anzeigen
   for(int i=0;i<100;i++){
-    display.drawPixel(random(MONITOR_WIDTH),random(MONITOR_HEIGHT), WHITE);
+    display.drawPixel(random(display.width()),random(display.height()), WHITE);
     display.display();
   }
   setup();
