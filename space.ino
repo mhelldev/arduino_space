@@ -18,6 +18,8 @@ int currentDirection = 0;
 
 int counter = 0;
 bool gameRunning = false;
+int starsX[10];
+int starsY[10];
 
 void setup()   {        
   Serial.begin(9600);  
@@ -25,16 +27,18 @@ void setup()   {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   // random start seed / zufälligen Startwert für Random-Funtionen initialisieren
   randomSeed(analogRead(0));
-
-  drawIntro();
   currentPositionX = 20;
   currentPositionY = MONITOR_HEIGHT / 2;
   currentDirection = 1;
   counter = 0;
-
+  for (int i=0; i < 10; i++) {
+    starsX[i] = random(MONITOR_WIDTH);
+    starsY[i] = random(MONITOR_HEIGHT);
+  }
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
   display.clearDisplay();
+  drawIntro();
 }
 
 void loop() {
@@ -43,7 +47,7 @@ void loop() {
     counter++;
     if (counter > 100) {
       refreshDirection();
-      refreshPosition();
+      refreshObjects();
       counter = 0;
     }
   }
@@ -56,16 +60,29 @@ void drawField() {
   display.drawLine(MONITOR_WIDTH - 1, 0, MONITOR_WIDTH - 1, MONITOR_HEIGHT - 1, WHITE);
 }
 
-void refreshPosition() {
+void refreshObjects() {
   drawField();
-  currentPositionX+=2;
+  //currentPositionX+=2;
   display.drawPixel(currentPositionX, currentPositionY, WHITE);
   display.drawPixel(currentPositionX+1, currentPositionY, WHITE);
   display.drawPixel(currentPositionX+2, currentPositionY, WHITE);
   display.drawPixel(currentPositionX+3, currentPositionY, WHITE);
   display.drawPixel(currentPositionX, currentPositionY-1, WHITE);
 
+  refreshStars();
+
   display.display();
+}
+
+void refreshStars() {
+  for (int i=0; i < 10; i++) {
+    display.drawPixel(starsX[i], starsY[i], WHITE);
+    starsX[i] -= 2;
+    if (starsX[i] < 0) {
+      starsX[i] = MONITOR_WIDTH;
+      starsY[i] = random(MONITOR_HEIGHT);
+    }
+  }
 }
 
 void refreshDirection() {
@@ -80,17 +97,17 @@ void refreshDirection() {
 }
 
 void drawIntro() {
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(2);
-  display.setCursor(12,6);
-  display.println("S P A C E");
-  display.setTextSize(1);
-  display.setCursor(22,22);
-  display.println("Press Button...");
-  display.display();
   while(digitalRead(buttonPin) == 0) {
-    // do nothing...
+    display.clearDisplay();
+    display.setTextColor(WHITE);
+    display.setTextSize(2);
+    display.setCursor(12,6);
+    display.println("S P A C E");
+    display.setTextSize(1);
+    display.setCursor(22,22);
+    display.println("Press Button...");
+    refreshStars();
+    display.display(); 
   }
   gameRunning = true;
 }
