@@ -6,6 +6,7 @@
 #define OLED_RESET 4 // not used / nicht genutzt bei diesem Display
 #define DRAW_DELAY 118
 #define D_NUM 47
+#define SPEED 100
 Adafruit_SSD1306 display(OLED_RESET);
 
 const int buttonPin = 2; 
@@ -73,7 +74,7 @@ void loop() {
   if (gameRunning) {
     display.clearDisplay();
     counter++;
-    if (counter > 100) {
+    if (counter > SPEED) {
       refreshDirection();
       refreshObjects();
       counter = 0;
@@ -88,7 +89,10 @@ void drawField() {
   display.drawLine(display.width() - 1, 0, display.width() - 1, display.height() - 1, WHITE);
 }
 
+int refreshCounter = 0;
+
 void refreshObjects() {
+  refreshCounter++;
   drawField();
   //currentPositionX+=2;
   display.drawPixel(currentPositionX, currentPositionY, WHITE);
@@ -96,7 +100,12 @@ void refreshObjects() {
   display.drawPixel(currentPositionX+2, currentPositionY, WHITE);
   display.drawPixel(currentPositionX+3, currentPositionY, WHITE);
   display.drawPixel(currentPositionX, currentPositionY-1, WHITE);
-
+  
+  if (refreshCounter > 5) {
+    refreshCounter = 0;
+    currentPositionY = currentPositionY + 1;
+  }
+  
   refreshStars();
   //refreshEnemies();
   refreshWall();
@@ -150,13 +159,9 @@ void refreshEnemies() {
 
 void refreshDirection() {
   int buttonState = digitalRead(buttonPin);
-  if (buttonState == 1 && lastButtonState==0) {
-      currentDirection++;
-      if (currentDirection > 3) {
-        currentDirection = 0;
-      }
+  if (buttonState == 1) {
+      currentPositionY = currentPositionY - 1;
   }
-  lastButtonState = buttonState;
 }
 
 void drawIntro() {
