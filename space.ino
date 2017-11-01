@@ -18,8 +18,9 @@ int counter = 0;
 bool gameRunning = false;
 int starsX[10];
 int starsY[10];
-int asteroidsX[1];
-int asteroidsY[1];
+int enemyX[1];
+int enemyY[1];
+int wall[128];
 
 void setup()   {        
   Serial.begin(9600);  
@@ -31,18 +32,41 @@ void setup()   {
   currentPositionY = display.height() / 2;
   currentDirection = 1;
   counter = 0;
-  for (int i=0; i < 10; i++) {
-    starsX[i] = random(display.width());
-    starsY[i] = random(display.height());
-  }
-  for (int i=0; i < 1; i++) {
-    asteroidsX[i] = random(display.width(), display.width()*2);
-    asteroidsY[i] = random(display.height());
-  }
+  initializeStars();
+  initializeEnemies();
+  initializeWall();
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
   display.clearDisplay();
   drawIntro();
+}
+
+void initializeStars() {
+  for (int i=0; i < 10; i++) {
+    starsX[i] = random(display.width());
+    starsY[i] = random(display.height());
+  }
+}
+
+void initializeEnemies() {
+  for (int i=0; i < 1; i++) {
+    enemyX[i] = random(display.width(), display.width()*2);
+    enemyY[i] = random(display.height());
+  }
+}
+
+void initializeWall() {
+  wall[0] = display.height() / 2;
+  for (int i = 1; i < 128; i++) {
+    int rnd = random(-1,2);
+    wall[i] = wall[i-1] + rnd;
+    if (wall[i] < 0) {
+      wall[i] = 0;
+    }
+    if (wall[i] > display.height() / 3) {
+      wall[i] = display.height() / 3;
+    }
+  }
 }
 
 void loop() {
@@ -74,9 +98,26 @@ void refreshObjects() {
   display.drawPixel(currentPositionX, currentPositionY-1, WHITE);
 
   refreshStars();
-  refreshEnemies();
+  //refreshEnemies();
+  refreshWall();
 
   display.display();
+}
+
+void refreshWall() {
+  for (int i=0; i < 127; i++) {
+    wall[i] = wall[i+1];
+    display.drawLine(i, 0, i, wall[i], WHITE);
+    display.drawLine(i, wall[i] + 20, i, display.height(), WHITE);
+  }
+  int rnd = random(-1,2);
+  wall[127] = wall[126] + rnd;
+  if (wall[127] < 0) {
+    wall[127] = 0;
+  }
+  if (wall[127] > display.height() / 3) {
+    wall[127] = display.height() / 3;
+  }
 }
 
 void refreshStars() {
@@ -92,11 +133,17 @@ void refreshStars() {
 
 void refreshEnemies() {
    for (int i=0; i < 1; i++) {
-    display.fillCircle(asteroidsX[i], asteroidsY[i], 2, WHITE);
-    asteroidsX[i] -= 1;
-    if (asteroidsX[i] < 0) {
-      asteroidsX[i] = random(display.width(), display.width()*2);
-      asteroidsY[i] = random(display.height());
+    display.drawPixel(enemyX[i], enemyY[i], WHITE);
+    display.drawPixel(enemyX[i] + 1, enemyY[i], WHITE);
+    display.drawPixel(enemyX[i] + 2, enemyY[i], WHITE);
+    display.drawPixel(enemyX[i] + 3, enemyY[i], WHITE);
+    display.drawPixel(enemyX[i] + 4, enemyY[i], WHITE);
+    display.drawPixel(enemyX[i] + 3, enemyY[i] - 1, WHITE);
+    display.drawPixel(enemyX[i] + 3, enemyY[i] - 2, WHITE);
+    enemyX[i] -= 1;
+    if (enemyX[i] < 0) {
+      enemyX[i] = random(display.width(), display.width()*2);
+      enemyY[i] = random(display.height());
     }
   }
 }
