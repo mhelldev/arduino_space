@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <Wire.h>
+#include "pitches.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -22,6 +23,13 @@ int starsY[10];
 int enemyX[1];
 int enemyY[1];
 int wall[128];
+
+float bpm = 10.0;
+float lastTimePlayedTone = 0.0;
+int piezoPin = 8;
+int melody[] = {
+  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
+
 
 void setup()   {        
   Serial.begin(9600);  
@@ -173,6 +181,7 @@ void refreshDirection() {
 }
 
 void drawIntro() {
+  int m = 0;
   while(digitalRead(buttonPin) == 0) {
     display.clearDisplay();
     display.setTextColor(WHITE);
@@ -184,6 +193,19 @@ void drawIntro() {
     display.println("Press Button...");
     refreshStars();
     display.display(); 
+
+    unsigned long time = millis();
+    time = time - lastTimePlayedTone;
+    float bps = bpm / 60.0;
+    float bpms = bps * 1000.0;
+    if (time > bpms) {
+      tone(piezoPin, melody[m], 200);
+      lastTimePlayedTone = millis();
+      m++;
+      if (m > melody.length() ) {
+        m = 0;
+      }
+    }
   }
   gameRunning = true;
 }
