@@ -202,7 +202,7 @@ void drawIntro() {
       tone(piezoPin, melody[m], 200);
       lastTimePlayedTone = millis();
       m++;
-      if (m > melody.length() ) {
+      if (m > 6 ) {
         m = 0;
       }
     }
