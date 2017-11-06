@@ -188,6 +188,10 @@ void drawIntro() {
   gameRunning = true;
 }
 
+void playIntroMelody() {
+  
+}
+
 void gameOver() {
   gameRunning = false;
   display.setCursor(12,10);
