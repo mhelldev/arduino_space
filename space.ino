@@ -77,8 +77,16 @@ void loop() {
     if (counter > SPEED) {
       refreshDirection();
       refreshObjects();
+      checkWallCollision();
       counter = 0;
     }
+  }
+}
+
+void checkWallCollision() {
+  if (currentPositionY <= wall[currentPositionX] 
+    || currentPositionY >= wall[currentPositionX] + 20) {
+    gameOver();
   }
 }
 
